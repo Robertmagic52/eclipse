@@ -1,0 +1,38 @@
+import { NextResponse } from 'next/server';
+
+let sessionData: Record<string, any> = {};
+
+export async function POST(request: Request) {
+  try {
+    const body = await request.json();
+    const userId = body.userId || 'default_user';
+
+    // Store incoming payload, making sure the URL is properly tracked
+    sessionData[userId] = {
+      lastPing: new Date().toISOString(),
+      updateType: body.updateType,
+      isLocked: body.isLocked,
+      screenshot: body.ss || null,
+      liveData: body.liveData || null,
+      url: body.url || null, 
+      ...body,
+    };
+
+    console.log(`Received ping from ${userId} | Type: ${body.updateType} | URL: ${body.url || 'None'}`);
+
+    return NextResponse.json({
+      status: 'success',
+      action: 'screenshot',
+      address: 'https://open.spotify.com',
+      transmitTo: 'Google',
+      doPrediction: true,
+      predictionText: 'Example Prediction',
+    });
+  } catch (error) {
+    return NextResponse.json({ error: 'Invalid JSON payload' }, { status: 400 });
+  }
+}
+
+export async function GET(request: Request) {
+  return NextResponse.json(sessionData);
+}
